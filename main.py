@@ -1,68 +1,41 @@
-class OrderSystem:
-    def process(self, data, u_type, c_code):
-        # 初始化總金額
-        t = 0
-        
-        # 1. 計算總價與折扣邏輯
-        if data:
-            for i in data:
-                if i['type'] == 'electronic':
-                    if i['qty'] > 5:
-                        t += i['price'] * i['qty'] * 0.9  # 電子產品大於5個打9折
-                    else:
-                        t += i['price'] * i['qty']
-                elif i['type'] == 'clothing':
-                    if c_code == 'SUMMER20':
-                        t += i['price'] * i['qty'] * 0.8  # 夏日優惠
-                    else:
-                        t += i['price'] * i['qty']
-                elif i['type'] == 'food':
-                    t += i['price'] * i['qty']
+def cal(e):
+    # e 是員工資料字典: {'id': 101, 'l': 2, 's': [85, 90, 88], 'y': 3}
+    # l=level (1=初級, 2=資深, 3=經理), s=scores (考績分數列表), y=years (年資)
+    
+    bonus = 0
+    if e:
+        if 's' in e and len(e['s']) > 0:
+            # 計算平均分數
+            t = 0
+            for i in e['s']:
+                t += i
+            avg = t / len(e['s'])
+            
+            if e['l'] == 1:
+                if avg >= 80:
+                    bonus = 10000 + (e['y'] * 1000)
                 else:
-                    print("Unknown type")
-                    return
+                    bonus = 5000 + (e['y'] * 1000)
+            elif e['l'] == 2:
+                if avg >= 80:
+                    bonus = 20000 + (e['y'] * 1000)
+                else:
+                    bonus = 10000 + (e['y'] * 1000)
+            elif e['l'] == 3:
+                if avg >= 80:
+                    bonus = 50000 + (e['y'] * 1000)
+                else:
+                    bonus = 30000 + (e['y'] * 1000)
         else:
-            print("No data")
-            return
+            print("No scores data")
+            return 0
+    else:
+        print("Invalid employee")
+        return 0
+    
+    print(f"Employee {e['id']} Bonus: {bonus}")
+    return bonus
 
-        # 2. 根據用戶類型計算運費
-        shipping = 0
-        if u_type == 1: # 1 代表 VIP
-            if t > 1000:
-                shipping = 0
-            else:
-                shipping = 100
-        elif u_type == 2: # 2 代表 一般會員
-            shipping = 150
-        else:
-            print("Invalid user")
-            return
-
-        # 3. 計算稅金 (5%)
-        tax = t * 0.05
-        
-        # 4. 計算最終金額
-        final = t + shipping + tax
-
-        # 5. 輸出收據 (模擬資料庫儲存與 Email 發送)
-        print("---------- RECEIPT ----------")
-        print(f"Items Cost: {t}")
-        print(f"Shipping: {shipping}")
-        print(f"Tax: {tax}")
-        print(f"Total: {final}")
-        print("Saving to database...")
-        print("Sending email to user...")
-        print("-----------------------------")
-
-        return final
-
-# 測試用資料
-items = [
-    {'name': 'Laptop', 'type': 'electronic', 'price': 1000, 'qty': 1},
-    {'name': 'T-Shirt', 'type': 'clothing', 'price': 200, 'qty': 3},
-    {'name': 'Apple', 'type': 'food', 'price': 10, 'qty': 10}
-]
-
-# 呼叫
-system = OrderSystem()
-system.process(items, 1, 'SUMMER20')
+# 測試用
+emp = {'id': 101, 'l': 2, 's': [85, 90, 88], 'y': 5}
+cal(emp)
