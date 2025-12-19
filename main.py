@@ -1,68 +1,59 @@
-class OrderSystem:
-    def process(self, data, u_type, c_code):
-        # 初始化總金額
-        t = 0
+def battle_turn(p, e, action):
+    # p = player dict, e = enemy dict
+    # action: 1=Attack, 2=Heal, 3=Ult (Special)
+    
+    msg = ""
+    
+    if p['hp'] > 0 and e['hp'] > 0:
+        if action == 1:
+            # 普通攻擊
+            dmg = p['atk'] - e['def']
+            if dmg < 0: dmg = 0
+            e['hp'] -= dmg
+            msg = f"Player attacked! Dealt {dmg} damage."
         
-        # 1. 計算總價與折扣邏輯
-        if data:
-            for i in data:
-                if i['type'] == 'electronic':
-                    if i['qty'] > 5:
-                        t += i['price'] * i['qty'] * 0.9  # 電子產品大於5個打9折
-                    else:
-                        t += i['price'] * i['qty']
-                elif i['type'] == 'clothing':
-                    if c_code == 'SUMMER20':
-                        t += i['price'] * i['qty'] * 0.8  # 夏日優惠
-                    else:
-                        t += i['price'] * i['qty']
-                elif i['type'] == 'food':
-                    t += i['price'] * i['qty']
-                else:
-                    print("Unknown type")
-                    return
-        else:
-            print("No data")
-            return
-
-        # 2. 根據用戶類型計算運費
-        shipping = 0
-        if u_type == 1: # 1 代表 VIP
-            if t > 1000:
-                shipping = 0
+        elif action == 2:
+            # 補血
+            if p['mp'] >= 10:
+                p['hp'] += 20
+                p['mp'] -= 10
+                if p['hp'] > p['max_hp']:
+                    p['hp'] = p['max_hp']
+                msg = "Player healed 20 HP."
             else:
-                shipping = 100
-        elif u_type == 2: # 2 代表 一般會員
-            shipping = 150
-        else:
-            print("Invalid user")
-            return
-
-        # 3. 計算稅金 (5%)
-        tax = t * 0.05
+                msg = "Not enough MP!"
         
-        # 4. 計算最終金額
-        final = t + shipping + tax
+        elif action == 3:
+            # 大絕招
+            if p['mp'] >= 50:
+                dmg = p['atk'] * 3
+                e['hp'] -= dmg
+                p['mp'] -= 50
+                msg = f"ULTIMATE MOVE! Dealt {dmg} damage."
+            else:
+                msg = "Not enough MP for Ult!"
+        else:
+            msg = "Invalid action."
 
-        # 5. 輸出收據 (模擬資料庫儲存與 Email 發送)
-        print("---------- RECEIPT ----------")
-        print(f"Items Cost: {t}")
-        print(f"Shipping: {shipping}")
-        print(f"Tax: {tax}")
-        print(f"Total: {final}")
-        print("Saving to database...")
-        print("Sending email to user...")
-        print("-----------------------------")
+        # 敵人反擊 (簡單寫死)
+        if e['hp'] > 0:
+            e_dmg = e['atk'] - p['def']
+            if e_dmg < 0: e_dmg = 0
+            p['hp'] -= e_dmg
+            msg += f" Enemy counter-attacked! Took {e_dmg} damage."
+        else:
+            msg += " Enemy is dead!"
+            
+    else:
+        msg = "Battle is already over."
 
-        return final
+    print(f"Status -> Player: {p['hp']}/{p['max_hp']} HP, Enemy: {e['hp']} HP")
+    return msg
 
-# 測試用資料
-items = [
-    {'name': 'Laptop', 'type': 'electronic', 'price': 1000, 'qty': 1},
-    {'name': 'T-Shirt', 'type': 'clothing', 'price': 200, 'qty': 3},
-    {'name': 'Apple', 'type': 'food', 'price': 10, 'qty': 10}
-]
+# 測試資料
+player = {'hp': 100, 'max_hp': 100, 'mp': 60, 'atk': 20, 'def': 5}
+enemy = {'hp': 80, 'atk': 15, 'def': 2}
 
 # 呼叫
-system = OrderSystem()
-system.process(items, 1, 'SUMMER20')
+print(battle_turn(player, enemy, 1))
+print(battle_turn(player, enemy, 3))
